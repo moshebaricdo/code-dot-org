@@ -9,6 +9,7 @@ const assertions = {
   'uses-text-compression': ['error', {maxLength: 5}],
   'third-party-cookies': 'off',
   'uses-rel-preconnect': 'off',
+  'meta-description': 'off', // Substituted by equivalent test in 'All The Things' UI Test.
 };
 
 if (process.env.STAGE !== 'production') {
