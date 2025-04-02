@@ -113,6 +113,51 @@ const PythonlabView: React.FunctionComponent<
 
   const currentLevel = useAppSelector(state => getCurrentLevel(state));
 
+  const detectZoom = (): number => {
+    if (typeof window === 'undefined') return 100;
+
+    if (window.visualViewport?.scale) {
+      return Math.round(window.visualViewport.scale * 100);
+    }
+
+    if (window.devicePixelRatio) {
+      return Math.round(window.devicePixelRatio * 100);
+    }
+
+    return Math.round((screen.width / window.innerWidth) * 100);
+  };
+
+  useEffect(() => {
+    let lastZoom = detectZoom();
+    const pageLoadState = document.readyState;
+
+    const logZoomChange = (zoomPercent: number, direction: 'in' | 'out') => {
+      console.log('BrowserZoomChanged', {
+        zoomPercent,
+        direction,
+        pageLoadState,
+        page: 'Pythonlab',
+      });
+    };
+
+    const checkZoom = () => {
+      const currentZoom = detectZoom();
+      if (currentZoom !== lastZoom) {
+        const direction = currentZoom > lastZoom ? 'in' : 'out';
+        logZoomChange(currentZoom, direction);
+        lastZoom = currentZoom;
+      }
+    };
+
+    const interval = setInterval(checkZoom, 300);
+    window.visualViewport?.addEventListener('resize', checkZoom);
+
+    return () => {
+      clearInterval(interval);
+      window.visualViewport?.removeEventListener('resize', checkZoom);
+    };
+  }, []);
+
   useEffect(() => {
     if (progressManager && levelProperties.appName === 'pythonlab') {
       progressManager.setValidator(
